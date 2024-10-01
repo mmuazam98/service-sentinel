@@ -10,8 +10,8 @@ import (
 
 type Config struct {
 	Services        []Service `yaml:"services"`
-	AlertWebhookURL string    `yaml:"alert_webhook_url"`
-	SlackWebhookURL string    `yaml:"slack_webhook_url"`
+	AlertWebhookURL string    `yaml:"alert_webhook_url,omitempty"`
+	SlackWebhookURL string    `yaml:"slack_webhook_url,omitempty"`
 }
 
 type Service struct {
@@ -34,6 +34,16 @@ func LoadConfig() Config {
 	fmt.Printf("Loaded %d services from config:\n", len(config.Services))
 	for _, service := range config.Services {
 		fmt.Printf("  - %s: %s\n", service.Name, service.URL)
+	}
+
+	alertWebhookURL := os.Getenv("ALERT_WEBHOOK_URL")
+	slackWebhookURL := os.Getenv("SLACK_WEBHOOK_URL")
+
+	if alertWebhookURL != "" {
+		config.AlertWebhookURL = alertWebhookURL
+	}
+	if slackWebhookURL != "" {
+		config.SlackWebhookURL = slackWebhookURL
 	}
 
 	return config

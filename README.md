@@ -23,17 +23,19 @@
 ### Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/mmuazam98/service-sentinel.git
-   cd service-sentinel
-   ```
+
+```bash
+git clone https://github.com/mmuazam98/service-sentinel.git
+cd service-sentinel
+```
+
 2. Install dependencies (if any):
 
 ```bash
 go mod tidy
 ```
 
-3. Create a config/config.yaml file to define the services you want to monitor. Below is an example:
+3. Update the config/config.yaml file to define the services you want to monitor. Below is an example:
 
 ```yaml
 services:
@@ -56,7 +58,10 @@ alert_webhook_url: "https://webhook.site/..."
 slack_webhook_url: "https://hooks.slack.com/services/.../..."
 ```
 
-Update `alert_webhook_url` AND/OR `slack_webhook_url` with a valid webhook URL.
+### Configuration Notes
+
+- Update the `alert_webhook_url` and/or `slack_webhook_url` fields with valid webhook URLs to receive notifications.
+- Optionally, you can set the environment variables `ALERT_WEBHOOK_URL` and `SLACK_WEBHOOK_URL` to override the values in the configuration file.
 
 ## Running the Application
 
@@ -72,7 +77,7 @@ Replace 1 with your desired interval in minutes for health checks.
 
 You will see output similar to the following in your console:
 
-```
+```bash
 Loaded 7 services from config:
   - GitHub API: https://api.github.com
   - JSONPlaceholder: https://jsonplaceholder.typicode.com/posts
@@ -81,7 +86,7 @@ Loaded 7 services from config:
   - Public APIs: https://api.publicapis.org/entries
   - Unhealthy 404: https://httpstat.us/404
   - Unhealthy 500: https://httpstat.us/500
-[INFO] 2024-10-01 12:29:33: Service Health Checker running every 1 minutes...
+[INFO] 2024-10-01 12:29:33: Service Sentinel running every 1 minutes...
 [INFO] 2024-10-01 12:29:33: Starting health checks...
 [INFO] 2024-10-01 12:29:34: Service 'JSONPlaceholder' (https://jsonplaceholder.typicode.com/posts) is Healthy (Response time: 349.52725ms)
 [WARN] 2024-10-01 12:29:34: Service 'OpenWeatherMap' (https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY) returned status code 401 (Response time: 395.360458ms)

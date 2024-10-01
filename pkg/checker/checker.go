@@ -23,11 +23,10 @@ func NewServiceChecker(config config.Config) *ServiceChecker {
 }
 
 func (s *ServiceChecker) Run(intervalMinutes int) {
-
 	ticker := time.NewTicker(time.Duration(intervalMinutes) * time.Minute)
 	defer ticker.Stop()
 
-	logger.Info(fmt.Sprintf("Service Health Checker running every %d minutes...", intervalMinutes))
+	logger.Info(fmt.Sprintf("Service Sentinel running every %d minutes...", intervalMinutes))
 
 	s.performHealthChecks(s.Config.Services)
 

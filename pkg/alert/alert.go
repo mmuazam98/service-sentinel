@@ -25,6 +25,7 @@ func SendAlert(message string, config config.Config, service config.Service, sta
 			log.Printf("Error sending alert to webhook: %v", err)
 		}
 	}
+
 	if config.SlackWebhookURL != "" {
 		alertMessage := map[string]interface{}{
 			"blocks": []map[string]interface{}{
