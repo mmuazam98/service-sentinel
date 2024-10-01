@@ -3,7 +3,6 @@ package alert
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -27,46 +26,8 @@ func SendAlert(message string, config config.Config, service config.Service, sta
 	}
 
 	if config.SlackWebhookURL != "" {
-		alertMessage := map[string]interface{}{
-			"blocks": []map[string]interface{}{
-				{
-					"type": "header",
-					"text": map[string]interface{}{
-						"type":  "plain_text",
-						"text":  "Service Sentinel",
-						"emoji": true,
-					},
-				},
-				{
-					"type": "section",
-					"text": map[string]string{
-						"type": "mrkdwn",
-						"text": fmt.Sprintf("*Service:* %s\n*Status:* %s\n*Response Time:* %v", service.Name, status, responseTime),
-					},
-				},
-				{
-					"type": "divider",
-				},
-				{
-					"type": "section",
-					"text": map[string]string{
-						"type": "mrkdwn",
-						"text": "Check the service for more details! :warning:",
-					},
-				},
-				{
-					"type": "context",
-					"elements": []map[string]string{
-						{
-							"type": "plain_text",
-							"text": fmt.Sprintf("Checked at: %s", time.Now().Format("2006-01-02 15:04:05")),
-						},
-					},
-				},
-			},
-		}
-
-		jsonPayload, err := json.Marshal(alertMessage)
+		payload := buildSlackPayload(service.Name, status, responseTime)
+		jsonPayload, err := json.Marshal(payload)
 		if err != nil {
 			log.Printf("Error marshalling JSON for alert: %v", err)
 			return
