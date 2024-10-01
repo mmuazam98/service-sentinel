@@ -1,0 +1,18 @@
+services:
+  - name: "GitHub API"
+    url: "https://api.github.com"
+  - name: "JSONPlaceholder"
+    url: "https://jsonplaceholder.typicode.com/posts"
+  - name: "OpenWeatherMap"
+    url: "https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY"
+  - name: "Dog API"
+    url: "https://dog.ceo/api/breeds/image/random"
+  - name: "Public APIs"
+    url: "https://api.publicapis.org/entries"
+  - name: "Unhealthy 404"
+    url: "https://httpstat.us/404"
+  - name: "Unhealthy 500"
+    url: "https://httpstat.us/500"
+
+alert_webhook_url: "https://webhook.site/..."
+slack_webhook_url: "https://hooks.slack.com/services/.../..."
