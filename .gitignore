@@ -1,1 +1,5 @@
 /service-sentinel
+# Environment-specific deployment manifests (contain internal registry paths,
+# project IDs and cluster names). Keep these out of the public repo.
+deploy/staging.yaml
+deploy/*.local.yaml
