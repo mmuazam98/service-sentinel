@@ -1,0 +1,125 @@
+# Deploy Service Sentinel into a cluster and let it discover probe endpoints
+# automatically. Apply with: kubectl apply -f deploy/kubernetes.yaml
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: service-sentinel
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: service-sentinel
+  namespace: service-sentinel
+---
+# Discovery only ever reads pod specs. If you restrict `kubernetes.namespaces`
+# in the config, you can swap this ClusterRole for a namespaced Role.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: service-sentinel-pod-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: service-sentinel-pod-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: service-sentinel-pod-reader
+subjects:
+  - kind: ServiceAccount
+    name: service-sentinel
+    namespace: service-sentinel
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-sentinel-config
+  namespace: service-sentinel
+data:
+  config.yaml: |
+    interval: 1m
+    timeout: 5s
+
+    # Custom endpoints are checked alongside anything found in the cluster.
+    services:
+      - name: "GitHub API"
+        url: "https://api.github.com"
+
+    kubernetes:
+      enabled: true
+      namespaces: []
+      label_selector: ""
+      probe: readiness
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service-sentinel
+  namespace: service-sentinel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service-sentinel
+  template:
+    metadata:
+      labels:
+        app: service-sentinel
+    spec:
+      serviceAccountName: service-sentinel
+      containers:
+        - name: service-sentinel
+          image: ghcr.io/mmuazam98/service-sentinel:latest
+          # IfNotPresent lets a locally built image (e.g. `kind load`) be used
+          # without contacting a registry. A :latest tag would otherwise
+          # default to Always and fail on a local cluster.
+          imagePullPolicy: IfNotPresent
+          args: ["-config", "/etc/service-sentinel/config.yaml"]
+          env:
+            # Alert destinations come from a Secret so they stay out of the
+            # ConfigMap. Create it with:
+            #   kubectl -n service-sentinel create secret generic service-sentinel-alerts \
+            #     --from-literal=slack-webhook-url=https://hooks.slack.com/services/...
+            - name: SLACK_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: service-sentinel-alerts
+                  key: slack-webhook-url
+                  optional: true
+            - name: ALERT_WEBHOOK_URL
+              valueFrom:
+                secretKeyRef:
+                  name: service-sentinel-alerts
+                  key: alert-webhook-url
+                  optional: true
+          volumeMounts:
+            - name: config
+              mountPath: /etc/service-sentinel
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            # 65532 is the numeric UID of distroless's "nonroot" user. The
+            # kubelet cannot verify a username, only a UID, so runAsNonRoot
+            # fails without this.
+            runAsUser: 65532
+            runAsGroup: 65532
+            capabilities:
+              drop: ["ALL"]
+      volumes:
+        - name: config
+          configMap:
+            name: service-sentinel-config
