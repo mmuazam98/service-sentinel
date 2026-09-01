@@ -1,18 +1,33 @@
+# How often to check every service, and how long a single check may take.
+interval: 1m
+timeout: 5s
+
+# Statically configured endpoints. These are always checked.
 services:
   - name: "GitHub API"
     url: "https://api.github.com"
   - name: "JSONPlaceholder"
     url: "https://jsonplaceholder.typicode.com/posts"
-  - name: "OpenWeatherMap"
-    url: "https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_API_KEY"
-  - name: "Dog API"
-    url: "https://dog.ceo/api/breeds/image/random"
-  - name: "Public APIs"
-    url: "https://api.publicapis.org/entries"
-  - name: "Unhealthy 404"
-    url: "https://httpstat.us/404"
   - name: "Unhealthy 500"
     url: "https://httpstat.us/500"
 
-alert_webhook_url: "https://webhook.site/..."
-slack_webhook_url: "https://hooks.slack.com/services/.../..."
+# In-cluster discovery. When enabled, Service Sentinel asks the Kubernetes API
+# server for pods, reads their readiness/liveness probes, and checks those
+# endpoints alongside the services listed above. Requires the RBAC in
+# deploy/kubernetes.yaml.
+kubernetes:
+  enabled: false
+  # Namespaces to scan. Leave empty to scan every namespace the service
+  # account can list.
+  namespaces: []
+  #   - default
+  #   - production
+  # Optional pod filter, same syntax as `kubectl get pods -l`.
+  label_selector: ""
+  # Which probe to call: readiness, liveness, or both.
+  probe: readiness
+
+# Alerting. Both are optional and can be overridden with the
+# ALERT_WEBHOOK_URL and SLACK_WEBHOOK_URL environment variables.
+alert_webhook_url: ""
+slack_webhook_url: ""
